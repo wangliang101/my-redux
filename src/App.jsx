@@ -32,7 +32,7 @@ export function App() {
 }
 
 const CompA = () => <section>子组件A<User/></section>
-const CompB = () => <section>子组件B<UserModifier /></section>
+const CompB = () => <section>子组件B<Wrapper /></section>
 const CompC = () => <section>子组件C</section>
 
 const User = () => {
@@ -44,15 +44,28 @@ const User = () => {
   )
 }
 
-const UserModifier = () => {
+
+
+const Wrapper = () => {
   const {appState, setAppState} = useContext(appContext);
+  const dispatch = (action) => {
+    setAppState(reducer(appState, action))
+  }
+  return <UserModifier dispatch={dispatch} state={appState}/>
+}
+
+const UserModifier = ({dispatch, state}) => {
+  console.log('state', state)
   const onChange = (e) => {
-    setAppState(reducer(appState, {type: 'updateUser', payload: {name: e.target.value}}))
+    
+    dispatch({type: 'updateUser', payload: {name: e.target.value}})
+    // setAppState(reducer(appState, {type: 'updateUser', payload: {name: e.target.value}}))
+
   }
   return (
     <div>
       <input 
-        value={appState.user.name}
+        value={state.user.name}
         onChange={onChange}
       />
     </div>
