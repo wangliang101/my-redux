@@ -1,6 +1,24 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 
 const appContext = React.createContext(null);
+
+const store = {
+  state: {
+    user: {name: "jack", age: 20}
+  },
+  setState(newState){
+    store.state = newState;
+    store.listeners.map(fn => fn(store.state))
+  },
+  listeners: [],
+  subscribe(fn){
+    store.listeners.push(fn);
+    return () => {
+      const index = store.listeners.indexOf(fn);
+      store.listeners.splice(index, 1)
+    }
+  }
+}
 
 const reducer = (state, {type, payload}) => {
   if(type === 'updateUser'){
@@ -16,14 +34,25 @@ const reducer = (state, {type, payload}) => {
   }
 }
 
+const connect = (Component) => {
+  return (props) => {
+    const {state, setState} = useContext(appContext);
+    const [, update] = useState({});
+    useEffect(() => {
+      store.subscribe(() => {
+        update({})
+      })
+    }, [])
+    const dispatch = (action) => {
+      setState(reducer(state, action))
+    }
+    return <Component {...props} dispatch={dispatch} state={state}/>
+  }
+}
 export function App() {
-  const [appState, setAppState] = useState({
-    user: {name: "jack", age: 20}
-  })
 
-  const contextValue = {appState, setAppState}
   return (
-    <appContext.Provider value={contextValue}>
+    <appContext.Provider value={store}>
       <CompA />
       <CompB />
       <CompC />
@@ -31,40 +60,47 @@ export function App() {
   )
 }
 
-const CompA = () => <section>子组件A<User/></section>
-const CompB = () => <section>子组件B<UserModifierUser>哈哈哈</UserModifierUser></section>
-const CompC = () => <section>子组件C</section>
-
-const User = () => {
-  const contextValue = useContext(appContext)
+const CompA = () => {
+  console.log('子组件A执行了')
   return (
-    <div>
-      User: {contextValue.appState.user.name}
-    </div>
+    <section>子组件A<User/></section>
+  )
+}
+const CompB = () => {
+  console.log('子组件B执行了')
+  return(
+    <section>子组件B<UserModifierUser>哈哈哈</UserModifierUser></section>
+  )
+}
+const CompC = () => {
+  console.log('子组件C执行了')
+  return(
+    <section>子组件C</section>
   )
 }
 
+const User = connect(({state}) => {
+  console.log('User执行了')
+  return (
+    <div>
+      User: {state.user.name}
+    </div>
+  )
+})
 
 
-const Wrapper = () => {
-  const {appState, setAppState} = useContext(appContext);
-  const dispatch = (action) => {
-    setAppState(reducer(appState, action))
-  }
-  return <UserModifier dispatch={dispatch} state={appState}/>
-}
 
-const connect = (Component) => {
-  return (props) => {
-    const {appState, setAppState} = useContext(appContext);
-    const dispatch = (action) => {
-      setAppState(reducer(appState, action))
-    }
-    return <Component {...props} dispatch={dispatch} state={appState}/>
-  }
-}
+// const Wrapper = () => {
+//   const {appState, setAppState} = useContext(appContext);
+//   const dispatch = (action) => {
+//     setAppState(reducer(appState, action))
+//   }
+//   return <UserModifier dispatch={dispatch} state={appState}/>
+// }
+
 
 const UserModifierUser = connect(({dispatch, state, children}) => {
+  console.log('UserModifierUser执行了');
   const onChange = (e) => {
     
     dispatch({type: 'updateUser', payload: {name: e.target.value}})
