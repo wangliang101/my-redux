@@ -24,12 +24,14 @@ const CompB = () => {
     <section>子组件B<UserModifierUser>哈哈哈</UserModifierUser></section>
   )
 }
-const CompC = () => {
+const CompC = connect((state) => {
+  return {group: state.group.name}
+})(({group}) => {
   console.log('子组件C执行了')
   return(
-    <section>子组件C</section>
+    <section>子组件C<div>{group}</div></section>
   )
-}
+})
 
 const User = connect((state) => {
   const { user } = state;
