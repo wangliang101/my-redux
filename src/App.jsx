@@ -1,5 +1,6 @@
 import React from 'react';
-import { appContext, store, connect} from './redux.jsx'
+import { appContext, store, connect } from './redux.jsx';
+import { connectToUser } from './connecters/connectToUser.js'
 
 export function App() {
 
@@ -33,10 +34,8 @@ const CompC = connect((state) => {
   )
 })
 
-const User = connect((state) => {
-  const { user } = state;
-  return {user}
-})(({user}) => {
+
+const User = connectToUser(({user}) => {
   console.log('User执行了')
   return (
     <div>
@@ -46,11 +45,7 @@ const User = connect((state) => {
 })
 
 
-const UserModifierUser = connect(null, (dispatch) => {
-  return {
-    updateUser: (attrs) => dispatch({type: 'updateUser', payload: attrs})
-  }
-})(({updateUser, state, children}) => {
+const UserModifierUser = connectToUser(({updateUser, user, children}) => {
   console.log('UserModifierUser执行了');
   const onChange = (e) => {
     updateUser({name: e.target.value})
@@ -59,7 +54,7 @@ const UserModifierUser = connect(null, (dispatch) => {
     <div>
       {children}
       <input 
-        value={state.user.name}
+        value={user.name}
         onChange={onChange}
       />
     </div>
