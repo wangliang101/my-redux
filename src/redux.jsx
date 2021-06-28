@@ -46,11 +46,15 @@ const change = (oldState, newState) => {
   return false
 }
 
-const connect = (selector) => (Component) => {
+const connect = (selector, dispatcheSelector) => (Component) => {
   return (props) => {
     const {state, setState} = useContext(appContext);
+    const dispatch = (action) => {
+      setState(reducer(state, action))
+    }
     const [, update] = useState({});
     const data = selector ? selector(state) : {state}
+    const dispatchers = dispatcheSelector ? dispatcheSelector(dispatch) : {dispatch}
     useEffect(() => {
       store.subscribe(() => {
         const newDate = selector ? selector(store.state) : {state: store.state}
@@ -59,10 +63,8 @@ const connect = (selector) => (Component) => {
         }
       })
     }, [selector])
-    const dispatch = (action) => {
-      setState(reducer(state, action))
-    }
-    return <Component {...props} {...data} dispatch={dispatch} />
+
+    return <Component {...props} {...data} {...dispatchers} />
   }
 }
 
