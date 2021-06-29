@@ -4,10 +4,8 @@ import React, { useState, useContext, useEffect } from 'react';
 const appContext = React.createContext(null);
 
 const store = {
-  state: {
-    user: {name: "jack", age: 20},
-    group: {name: "前端组"}
-  },
+  state: undefined,
+  reducer: undefined,
   setState(newState){
     store.state = newState;
     store.listeners.map(fn => fn(store.state))
@@ -22,18 +20,18 @@ const store = {
   }
 }
 
-const reducer = (state, {type, payload}) => {
-  if(type === 'updateUser'){
-    return {
-      ...state,
-      user: {
-        ...state.user,
-        ...payload
-      }
-    }
-  }else{
-    return state;
-  }
+const createSrore = (reducer, initState) => {
+  store.state = initState
+  store.reducer = reducer
+  return store
+}
+
+const Provider = ({store, children}) => {
+  return (
+    <appContext.Provider value={store}>
+      { children}
+    </appContext.Provider>
+  )
 }
 
 const change = (oldState, newState) => {
@@ -50,7 +48,7 @@ const connect = (selector, dispatcheSelector) => (Component) => {
   return (props) => {
     const {state, setState} = useContext(appContext);
     const dispatch = (action) => {
-      setState(reducer(state, action))
+      setState(store.reducer(state, action))
     }
     const [, update] = useState({});
     const data = selector ? selector(state) : {state}
@@ -68,4 +66,4 @@ const connect = (selector, dispatcheSelector) => (Component) => {
   }
 }
 
-export { appContext, connect, store}
+export { Provider, connect, createSrore}

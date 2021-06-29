@@ -1,15 +1,36 @@
 import React from 'react';
-import { appContext, store, connect } from './redux.jsx';
-import { connectToUser } from './connecters/connectToUser.js'
+import { Provider, createSrore, connect } from './redux.jsx';
+import { connectToUser } from './connecters/connectToUser.js';
+
+const reducer = (state, {type, payload}) => {
+  if(type === 'updateUser'){
+    return {
+      ...state,
+      user: {
+        ...state.user,
+        ...payload
+      }
+    }
+  }else{
+    return state;
+  }
+}
+
+const initState = {
+  user: {name: "jack", age: 20},
+  group: {name: "前端组"}
+}
+
+const store = createSrore(reducer, initState)
 
 export function App() {
 
   return (
-    <appContext.Provider value={store}>
+    <Provider store={store}>
       <CompA />
       <CompB />
       <CompC />
-    </appContext.Provider>
+    </Provider>
   )
 }
 
