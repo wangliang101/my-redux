@@ -3,26 +3,33 @@ import React, { useState, useContext, useEffect } from 'react';
 
 const appContext = React.createContext(null);
 
+let state = undefined;
+let reducer = undefined;  // 为了让reducer不被暴露出去
+let listeners = [];
+const setState = (newState) =>{
+  state = newState;
+  listeners.map(fn => fn(state))
+}
+
 const store = {
-  state: undefined,
-  reducer: undefined,
-  setState(newState){
-    store.state = newState;
-    store.listeners.map(fn => fn(store.state))
+  getState(){
+    return state
   },
-  listeners: [],
+  dispatch(action){
+    setState(reducer(state, action))
+  },
   subscribe(fn){
-    store.listeners.push(fn);
+    listeners.push(fn);
     return () => {
-      const index = store.listeners.indexOf(fn);
-      store.listeners.splice(index, 1)
+      const index = listeners.indexOf(fn);
+      listeners.splice(index, 1)
     }
   }
 }
 
-const createSrore = (reducer, initState) => {
-  store.state = initState
-  store.reducer = reducer
+const createSrore = (_reducer, initState) => {
+  state = initState
+  reducer = _reducer
   return store
 }
 
@@ -46,16 +53,12 @@ const change = (oldState, newState) => {
 
 const connect = (selector, dispatcheSelector) => (Component) => {
   return (props) => {
-    const {state, setState} = useContext(appContext);
-    const dispatch = (action) => {
-      setState(store.reducer(state, action))
-    }
     const [, update] = useState({});
     const data = selector ? selector(state) : {state}
-    const dispatchers = dispatcheSelector ? dispatcheSelector(dispatch) : {dispatch}
+    const dispatchers = dispatcheSelector ? dispatcheSelector(store.dispatch) : {dispatch: store.dispatch}
     useEffect(() => {
       store.subscribe(() => {
-        const newDate = selector ? selector(store.state) : {state: store.state}
+        const newDate = selector ? selector(state) : {state}
         if(change(data, newDate)){
           update({})
         }
