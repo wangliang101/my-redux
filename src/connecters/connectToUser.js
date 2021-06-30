@@ -6,7 +6,8 @@ const userSelector = (state) => {
 
 const userDispatchers = (dispatch) => {
   return {
-    updateUser: (attrs) => dispatch({type: 'updateUser', payload: attrs})
+    updateUser: (attrs) => dispatch({type: 'updateUser', payload: attrs}),
+    dispatch
   }
 }
 

@@ -51,11 +51,21 @@ const change = (oldState, newState) => {
   return false
 }
 
+let preDispatch = store.dispatch
+
+const dispatch = (action) => {
+  if(action instanceof Function){
+    action(dispatch)
+  }else{
+    preDispatch(action)
+  }
+}
+
 const connect = (selector, dispatcheSelector) => (Component) => {
   return (props) => {
     const [, update] = useState({});
     const data = selector ? selector(state) : {state}
-    const dispatchers = dispatcheSelector ? dispatcheSelector(store.dispatch) : {dispatch: store.dispatch}
+    const dispatchers = dispatcheSelector ? dispatcheSelector(dispatch) : {dispatch}
     useEffect(() => {
       store.subscribe(() => {
         const newDate = selector ? selector(state) : {state}

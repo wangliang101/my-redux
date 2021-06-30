@@ -1,6 +1,7 @@
 import React from 'react';
 import { Provider, createSrore, connect } from './redux.jsx';
 import { connectToUser } from './connecters/connectToUser.js';
+import { ajax } from './ajax';
 
 const reducer = (state, {type, payload}) => {
   if(type === 'updateUser'){
@@ -65,11 +66,20 @@ const User = connectToUser(({user}) => {
   )
 })
 
+const fetchUser = (dispatch) => {
+  ajax('/user').then((data) => {
+    dispatch({type: 'updateUser', payload: {name: data}})
+  })
+}
 
-const UserModifierUser = connectToUser(({updateUser, user, children}) => {
+
+const UserModifierUser = connectToUser(({updateUser, user, children, dispatch}) => {
   console.log('UserModifierUser执行了');
   const onChange = (e) => {
     updateUser({name: e.target.value})
+  }
+  const handleClick = () => {
+    dispatch(fetchUser)
   }
   return (
     <div>
@@ -78,6 +88,7 @@ const UserModifierUser = connectToUser(({updateUser, user, children}) => {
         value={user.name}
         onChange={onChange}
       />
+      <button onClick={handleClick}>异步获取</button>
     </div>
   )
 })
