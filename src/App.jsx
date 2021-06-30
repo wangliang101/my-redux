@@ -79,7 +79,8 @@ const UserModifierUser = connectToUser(({updateUser, user, children, dispatch}) 
     updateUser({name: e.target.value})
   }
   const handleClick = () => {
-    dispatch(fetchUser)
+    dispatch({type: 'updateUser', payload: ajax('/user')})
+    // dispatch(fetchUser)
   }
   return (
     <div>
